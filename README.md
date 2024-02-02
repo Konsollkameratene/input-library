@@ -1,5 +1,4 @@
-# Konsollkameratene
-## Diverse kode fra Konsollkameratene Ltd.
+# Konsollkameratene™ Input Library
 kontroller_input.py er et (uferdig) bibliotek for å hente input fra kontrollere
 
 eksempel-spill.py er et program for å teste biblioteket
