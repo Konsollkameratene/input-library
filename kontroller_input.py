@@ -14,6 +14,8 @@ kontrollere = []
 #  om vi er koblet til en port fra før av eller ikke i hent_kontrollere()
 kontrollere_porter = set()
 
+feil_teller = 0
+
 
 class Kontroller:
     def __init__(self, port):
@@ -56,7 +58,7 @@ class Kontroller:
                 self.x = float(kontroller_data[0])
                 self.y = float(kontroller_data[1])
 
-                lengde = (self.x**2 + self.x**2)**0.5
+                lengde = (self.x**2 + self.y**2)**0.5
                 if lengde > 1:
                     self.x = self.x / lengde
                     self.y = self.y / lengde
@@ -64,10 +66,9 @@ class Kontroller:
                 self.knappJ = int(kontroller_data[2])
                 self.knappA = int(kontroller_data[3])
                 self.knappB = int(kontroller_data[4])
-
             else:
-                raise Exception(
-                    f"Mottok tekst med feil antall datapunkter: {tekst}\n")
+                global feil_teller
+                feil_teller += 1
 
         return self.x, self.y, self.knappJ, self.knappA, self.knappB
 
@@ -121,25 +122,25 @@ def hent_nye_kontrollere(maks_antall: int = -1) -> list:
             print("Pico?:", end=" ")
         print(enhet)
 
-    # print("Hentet", len(nye_kontrollere), "kontrollere")
     return nye_kontrollere
 
-# Hvis programmet ikke importeres men kjøres direkte tester vi koden
 
-
-TEST_MODUS = True
+TEST_MODUS = False
 
 if __name__ == "__main__":
     if TEST_MODUS:
         # Data sendt til 'loop://' blir sendt tilbake igjen
-        port = "loop://"
+        print("TEST_MODUS!")
+        kontroller = Kontroller("loop://")
     else:
-        port = "COM7"
-
-    kontroller = Kontroller(port)
+        nye_kontrollere = hent_nye_kontrollere()
+        if len(nye_kontrollere) < 1:
+            print("Koble til kontroller!")
+            exit()
+        kontroller = nye_kontrollere[0]
 
     while True:
-        sleep(1)
+        sleep(0.5)
         print(*kontroller.hent())
 
         if TEST_MODUS:
