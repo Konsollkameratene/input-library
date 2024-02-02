@@ -121,14 +121,13 @@ def hent_nye_kontrollere(maks_antall: int = -1) -> list:
             print("Pico?:", end=" ")
         print(enhet)
 
+    # print("Hentet", len(nye_kontrollere), "kontrollere")
     return nye_kontrollere
 
 # Hvis programmet ikke importeres men kjøres direkte tester vi koden
 
 
 TEST_MODUS = True
-
-hent_nye_kontrollere()
 
 if __name__ == "__main__":
     if TEST_MODUS:
