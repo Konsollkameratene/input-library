@@ -14,6 +14,7 @@ kontrollere = []
 #  om vi er koblet til en port fra før av eller ikke i hent_kontrollere()
 kontrollere_porter = set()
 
+# Foreløpig er ikke koden feilfri. Denne variabelen teller ting som går galt
 feil_teller = 0
 
 
@@ -67,6 +68,11 @@ class Kontroller:
                 self.knappA = int(kontroller_data[3])
                 self.knappB = int(kontroller_data[4])
             else:
+                # Hvis vi leser dataene fra kontrolleren samtidig som den er i
+                #  ferd med å sende nye data, vil vi ikke lese dataene riktig
+                #  og vil få feil antall datapunkter. Dette bør fikses i
+                #  fremtiden, men foreløpig teller vi antall ganger dette
+                #  skjer, som heldigvis ikke er så ofte
                 global feil_teller
                 feil_teller += 1
 
@@ -84,22 +90,33 @@ class Kontroller:
 
         if self.port != "loop://":
             print(
-                "Advarsel: test_data_send() brukes i kombinasjon \
+                "Advarsel: test_data_send() bør brukes i kombinasjon \
                   med port='loop://' for å teste programmet uten å være \
                   koblet til en kontroller")
 
         t = perf_counter()
         x = cos(t)
         y = sin(t)
-        kJ = int(sin(t) > 3**0.5 / 3)
+        kJ = int(sin(t) > 0.9)
         kA = 0
         kB = 0
         tekst_ut = f"{x} {y} {kJ} {kA} {kB}\n"
         self._tilkobling.write(tekst_ut.encode())
 
 
-# Work in progress:
-def hent_nye_kontrollere(maks_antall: int = -1) -> list:
+class TestKontroller(Kontroller):
+    def __init__(self, test_data: bool = True):
+        # Data sendt til 'loop://' blir sendt tilbake igjen
+        self.test_data = test_data
+        super().__init__(port="loop://")
+
+    def hent(self):
+        if self.test_data:
+            self.test_data_send()
+        return super().hent()
+
+
+def hent_nye_kontrollere(maks_antall: int = -1) -> list[Kontroller]:
     """
     Hent nye Kontroller-objekter som har blitt tilkoblet siden sist.
     maks_antall (int): Antall kontrollere vi prøver å hente. Negative tall betyr så
@@ -125,13 +142,12 @@ def hent_nye_kontrollere(maks_antall: int = -1) -> list:
     return nye_kontrollere
 
 
-TEST_MODUS = False
-
 if __name__ == "__main__":
+    TEST_MODUS = True
+
     if TEST_MODUS:
-        # Data sendt til 'loop://' blir sendt tilbake igjen
         print("TEST_MODUS!")
-        kontroller = Kontroller("loop://")
+        kontroller = TestKontroller()
     else:
         nye_kontrollere = hent_nye_kontrollere()
         if len(nye_kontrollere) < 1:
@@ -142,8 +158,3 @@ if __name__ == "__main__":
     while True:
         sleep(0.5)
         print(*kontroller.hent())
-
-        if TEST_MODUS:
-            # Generer og send test-data. Fordi vi sender til 'loop://' vil
-            # vi motta disse dataene selv
-            kontroller.test_data_send()
