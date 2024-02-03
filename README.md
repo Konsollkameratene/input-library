@@ -1,4 +1,4 @@
-# Konsollkameratene
+# Konsollkameratene™ Input Library
 
 ## Diverse kode fra Konsollkameratene Ltd.
 
