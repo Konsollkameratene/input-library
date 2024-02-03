@@ -7,111 +7,154 @@ from math import sin, cos
 from time import perf_counter, sleep
 
 
-# Vi lagrer de forrige input-ene vi mottok slik at hvis vi ikke mottar noe
-# nytt innen neste gang hent() kjøres retunerer vi bare de gamle input-ene
-x_joystick = 0
-y_joystick = 0
-knappJ = 0
-knappA = 0
-knappB = 0
+# Liste for å lagre alle tilkoblede kontrollere
+kontrollere = []
 
-# Serial-tilkoblingen vår lages i init() og lagres i ser:
-ser = None
+# Sett for å lagre tilkoblede porter slik at vi enkelt kan sjekke
+#  om vi er koblet til en port fra før av eller ikke i hent_kontrollere()
+kontrollere_porter = set()
 
-
-def init(port):
-    global ser
-
-    # timeout = 0: Venter ikke hvis
-    ser = serial.serial_for_url(port, baudrate=115200, timeout=0)
-
-# Work in progress:
-# def hent_kontroller():
-#     serial.tools.list_ports.comports()
-#     return
+# Foreløpig er ikke koden feilfri. Denne variabelen teller ting som går galt
+feil_teller = 0
 
 
-def hent():
-    global x_joystick, y_joystick, knappJ, knappA, knappB
+class Kontroller:
+    def __init__(self, port):
 
-    # Hvis init() ikke har blitt kjørt kan variabelen ser fortsatt være
-    # None. Gi i så fall en feilmelding
-    if ser is None:
-        feil_har_ikke_kjort_init("hent()")
+        # Serial-tilkoblingen vi bruker til å kommunisere med Pico-en
+        # Underscore foran navnet forteller at variabelen kun bør brukes
+        #  innad i klassen (og ikke utenifra)
+        self._tilkobling = serial.serial_for_url(
+            port, baudrate=115200, timeout=0)
+        self.port = port
+        kontrollere_porter.add(port)
 
-    tekst = ""
+        # Vi lagrer de forrige input-ene vi mottok slik at hvis vi ikke mottar noe
+        # nytt innen neste gang hent() kjøres retunerer vi bare de gamle input-ene
+        self.x = 0
+        self.y = 0
+        self.knappJ = 0
+        self.knappA = 0
+        self.knappB = 0
 
-    while True:
-        # Henter en linje med tekst og fjerner whitespace
-        ny_tekst = ser.readline().decode().strip()
-        if len(ny_tekst) > 0:
-            tekst = ny_tekst
-        else:
+        self.pause = False
+
+        kontrollere.append(self)
+
+    def hent(self):
+
+        tekst = ""
+
+        while True:
+            # Henter en linje med tekst og fjerner whitespace
+            ny_tekst = self._tilkobling.readline().decode().strip()
+            if len(ny_tekst) > 0:
+                tekst = ny_tekst
+            else:
+                break
+
+        if len(tekst) > 0:
+            kontroller_data = tekst.split(" ")
+            if len(kontroller_data) == 5:
+                self.x = float(kontroller_data[0])
+                self.y = float(kontroller_data[1])
+
+                lengde = (self.x**2 + self.y**2)**0.5
+                if lengde > 1:
+                    self.x = self.x / lengde
+                    self.y = self.y / lengde
+
+                self.knappJ = int(kontroller_data[2])
+                self.knappA = int(kontroller_data[3])
+                self.knappB = int(kontroller_data[4])
+            else:
+                # Hvis vi leser dataene fra kontrolleren samtidig som den er i
+                #  ferd med å sende nye data, vil vi ikke lese dataene riktig
+                #  og vil få feil antall datapunkter. Dette bør fikses i
+                #  fremtiden, men foreløpig teller vi antall ganger dette
+                #  skjer, som heldigvis ikke er så ofte
+                global feil_teller
+                feil_teller += 1
+
+        return self.x, self.y, self.knappJ, self.knappA, self.knappB
+
+    def koble_fra(self):
+        self._tilkobling.close()
+        kontrollere_porter.remove(self.port)
+        kontrollere.remove(self)
+        del self
+
+    def test_data_send(self):
+        """Send test-data. Brukes i kombinasjon med port='loop://' for
+            å teste programmet uten å være koblet til en kontroller"""
+
+        if self.port != "loop://":
+            print(
+                "Advarsel: test_data_send() bør brukes i kombinasjon \
+                  med port='loop://' for å teste programmet uten å være \
+                  koblet til en kontroller")
+
+        t = perf_counter()
+        x = cos(t)
+        y = sin(t)
+        kJ = int(sin(t) > 0.9)
+        kA = 0
+        kB = 0
+        tekst_ut = f"{x} {y} {kJ} {kA} {kB}\n"
+        self._tilkobling.write(tekst_ut.encode())
+
+
+class TestKontroller(Kontroller):
+    def __init__(self, test_data: bool = True):
+        # Data sendt til 'loop://' blir sendt tilbake igjen
+        self.test_data = test_data
+        super().__init__(port="loop://")
+
+    def hent(self):
+        if self.test_data:
+            self.test_data_send()
+        return super().hent()
+
+
+def hent_nye_kontrollere(maks_antall: int = -1) -> list[Kontroller]:
+    """
+    Hent nye Kontroller-objekter som har blitt tilkoblet siden sist.
+    maks_antall (int): Antall kontrollere vi prøver å hente. Negative tall betyr så
+        mange som mulig (dette er default)
+    """
+    enheter = serial.tools.list_ports.comports()
+
+    nye_kontrollere = []
+    for enhet in enheter:
+        if len(kontrollere) == maks_antall:
             break
+        if enhet.name in kontrollere_porter:
+            # Hopper over enheten hvis vi allerede er koblet til den
+            continue
+        if enhet.vid == 11914:
+            # __init__-funksjonen lagrer automatisk til kontrollere-listen
+            kontroller = Kontroller(port=enhet.name)
 
-    if len(tekst) > 0:
-        kontroller_data = tekst.split(" ")
-        if len(kontroller_data) == 5:
-            x_joystick = float(kontroller_data[0])
-            y_joystick = float(kontroller_data[1])
+            nye_kontrollere.append(kontroller)
+            print("Pico?:", end=" ")
+        print(enhet)
 
-            lengde = (x_joystick**2 + y_joystick**2)**0.5
-            if lengde > 1:
-                x_joystick = x_joystick / lengde
-                y_joystick = y_joystick / lengde
+    return nye_kontrollere
 
-            knappJ = int(kontroller_data[2])
-            knappA = int(kontroller_data[3])
-            knappB = int(kontroller_data[4])
-
-        else:
-            rest_tekst = ser.readlines()
-            rest_tekst = [x.decode() for x in rest_tekst]
-            rest_tekst = "\n".join(rest_tekst)
-            raise Exception(
-                f"Mottok tekst med feil antall datapunkter: {tekst}")
-
-    return x_joystick, y_joystick, knappJ, knappA, knappB
-
-
-def test_data_send():
-    """Send test-data. Brukes i kombinasjon med init('loop://') for
-        å teste programmet uten å være koblet til en kontroller"""
-
-    if ser is None:
-        feil_har_ikke_kjort_init("test_send()")
-
-    t = perf_counter()
-    x = cos(t)
-    y = sin(t)
-    kJ = int(sin(t) > 3**0.5 / 3)
-    kA = 0
-    kB = 0
-    tekst_ut = f"{x} {y} {kJ} {kA} {kB}\n"
-    ser.write(tekst_ut.encode())
-
-
-def feil_har_ikke_kjort_init(funksjon):
-    raise Exception(
-        f"Du må kjøre kontroller_input.init(port) før du kan kjøre {funksjon}!")
-
-
-# Hvis programmet ikke importeres men kjøres direkte tester vi koden
-
-TEST_MODUS = False
 
 if __name__ == "__main__":
+    TEST_MODUS = True
+
     if TEST_MODUS:
-        # Data sendt til 'loop://' blir sendt tilbake igjen
-        init("loop://")
+        print("TEST_MODUS!")
+        kontroller = TestKontroller()
     else:
-        init("COM6")
+        nye_kontrollere = hent_nye_kontrollere()
+        if len(nye_kontrollere) < 1:
+            print("Koble til kontroller!")
+            exit()
+        kontroller = nye_kontrollere[0]
 
     while True:
-        sleep(1)
-        print(*hent())
-
-        if TEST_MODUS:
-            # Generer og send test-data. Fordi vi sender til 'loop://' vil
-            # vi motta disse dataene selv
-            test_data_send()
+        sleep(0.5)
+        print(*kontroller.hent())
