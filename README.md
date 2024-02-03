@@ -18,6 +18,8 @@ Hvis kommandoen ikke funker er det sannsynligvis fordi du ikke har python instal
 
 - [x] Add python.exe to path
 
+Endre til riktig versjon av python i vscode ved å trykke på knappen helt nederst til høyre der det står 3.10.9 eller noe liknende.
+
 ## Kom i gang 02: Programmer
 
 Så kan vi begynne å bruke kontroller_input.py-biblioteket:
