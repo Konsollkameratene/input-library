@@ -43,7 +43,14 @@ if knappJ:
 ```
 Variablene x og y er posisjonen til joysticken. De vil begge være et desimaltall mellom -1 og 1. Når man ikke rører joysticken vil den altså være i [0, 0]. Merk også at posisjonen er normalisert sånn at den alltid vil være innenfor enhetssirkelen. Det betyr at den maksimale lengden til vektoren [x, y] er 1.
 
-Dette betyr kort sagt at du nå kan bruke variablene x og y til å for eksempel endre posisjonen til en spiller, uten å være bekymret for om den vil bevege seg raskere diagonalt enn horisontalt.
+Dette betyr at du nå kan bruke variablene x og y til å for eksempel endre posisjonen til en spiller, uten å være bekymret for om den vil bevege seg raskere diagonalt enn horisontalt.
+
+Si for eksempel at du har et objekt som heter spiller. Da kan vi bruke x og y som vi nå har hentet fra kontrolleren til å bevege spilleren:
+
+```python
+spiller.x += x * 100
+spiller.y += y * 100
+```
 
 ## Kom i gang 03: Testing uten kontroller
 
