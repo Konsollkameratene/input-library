@@ -50,8 +50,8 @@ Dette betyr at du nå kan bruke variablene x og y til å for eksempel endre posi
 Si for eksempel at du har et objekt som heter spiller. Da kan vi bruke x og y som vi nå har hentet fra kontrolleren til å bevege spilleren:
 
 ```python
-spiller.x += x * 100
-spiller.y += y * 100
+spiller.x += x * 10
+spiller.y += y * 10
 ```
 
 ## Kom i gang 03: Testing uten kontroller
