@@ -6,6 +6,8 @@
 
 `mini-eksempel.py` er et lite eksempel på hvordan du kan bruke biblioteket
 
+`pygame-eksempel.py` er et program som viser hvordan du kan bruke Pygamekontroller til å emulere en fysisk kontroller med piltastene
+
 `enhetssirkel.py` er et program for å teste biblioteket
 
 ## Kom i gang 01: Installer
