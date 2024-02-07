@@ -134,6 +134,11 @@ class TestKontroller(Kontroller):
 
 
 class PygameKontroller:
+    """
+    En 'falsk' kontroller som kan brukes til testing siden den emulerer en
+     kontroller ved hjelp av piltastene på tastaturet. Se pygame-eksempel.py
+    """
+
     def __init__(self):
         self.x = 0
         self.y = 0
