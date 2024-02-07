@@ -37,6 +37,8 @@ class Kontroller:
         self.knappA = 0
         self.knappB = 0
 
+        self.deadzone = 0.025
+
         self.pause = False
 
         kontrollere.append(self)
@@ -60,7 +62,10 @@ class Kontroller:
                 self.y = float(kontroller_data[1])
 
                 lengde = (self.x**2 + self.y**2)**0.5
-                if lengde > 1:
+                if lengde < self.deadzone:
+                    self.x = 0.0
+                    self.y = 0.0
+                elif lengde > 1:
                     self.x = self.x / lengde
                     self.y = self.y / lengde
 
