@@ -12,7 +12,10 @@ TEST_MODUS = True
 TEST_ROBUSTHET = False
 
 if TEST_MODUS:
-    kontroller = kontroller_input.TestKontroller(test_data=not TEST_ROBUSTHET)
+    # Lager en TestKontroller som ikke automatisk sender test-data, slik at
+    #  vi kan variere hvor mange ganger vi sender test-data (trenges
+    #  til TEST_ROBUSTHET)
+    kontroller = kontroller_input.TestKontroller(test_data=False)
 else:
     nye_kontrollere = kontroller_input.hent_nye_kontrollere()
     if len(nye_kontrollere) < 1:
@@ -75,9 +78,12 @@ while fortsett:
 
     # Følgende er kun for testing og bør ikke brukes i et faktisk program
     # Du kan trygt ignorere det hvis du ikke forstår
-    if TEST_MODUS and TEST_ROBUSTHET:
+    if TEST_MODUS:
         # Sender falske test-data som vi så mottar i retur
-        for i in range(random.randint(0, 3)):
+        if TEST_ROBUSTHET:
+            for i in range(random.randint(0, 3)):
+                kontroller.test_data_send()
+        else:
             kontroller.test_data_send()
 
     # Henter input fra kontrolleren vår
