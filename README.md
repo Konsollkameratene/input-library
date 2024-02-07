@@ -50,14 +50,18 @@ Dette betyr at du nå kan bruke variablene x og y til å for eksempel endre posi
 Si for eksempel at du har et objekt som heter spiller. Da kan vi bruke x og y som vi nå har hentet fra kontrolleren til å bevege spilleren:
 
 ```python
-spiller.x += x * 100
-spiller.y += y * 100
+spiller.x += x * 10
+spiller.y += y * 10
 ```
 
 ## Kom i gang 03: Testing uten kontroller
 
-Det kan være nyttig å teste koden uten å være koblet til en fysisk kontroller. Derfor finnes også TestKontroller-klassen:
+Det kan være nyttig å teste koden uten å være koblet til en fysisk kontroller. Derfor finnes også PygameKontroller-klassen som lar deg bruke piltastene til å emulere en kontroller.
 ```python
-min_kontroller = kontroller_input.TestKontroller()
+min_kontroller = kontroller_input.PygameKontroller()
 ```
-Når du kjører `hent()` på denne vil den returnere falske test-data. Kjør filen`enhetssirkel.py` for å se hvordan dataene ser ut.
+Merk at du må gi hvilke knapper som er trykket som et argument til `hent()`:
+```python
+keys = pygame.key.get_pressed() # Henter trykkede knapper
+x, y, knappJ, knappA, knappB = min_kontroller.hent(keys)
+```
