@@ -47,6 +47,8 @@ class Kontroller:
 
         self.deadzone = 0.03
 
+        self.er_tilkoblet = True
+
         self.pause = False
 
         kontrollere.append(self)
@@ -58,48 +60,54 @@ class Kontroller:
          kode som bruker PygameKontroller, der man må gi en verdi for keys
         """
         tekst = ""
+        if self.er_tilkoblet:
+            while True:
+                try:
+                    # Henter en linje med tekst og fjerner whitespace
+                    ny_tekst = self._tilkobling.readline().decode().strip()
+                except serial.serialutil.SerialException:
+                    print("Kontroller på", self.port, "ble koblet ut")
+                    self.koble_fra()
+                    break
 
-        while True:
-            # Henter en linje med tekst og fjerner whitespace
-            ny_tekst = self._tilkobling.readline().decode().strip()
-            if len(ny_tekst) > 0:
-                tekst = ny_tekst
-            else:
-                break
+                if len(ny_tekst) > 0:
+                    tekst = ny_tekst
+                else:
+                    break
 
-        if len(tekst) > 0:
-            kontroller_data = tekst.split(" ")
-            if len(kontroller_data) == 5:
-                self.x = float(kontroller_data[0])
-                self.y = float(kontroller_data[1])
+            if len(tekst) > 0:
+                kontroller_data = tekst.split(" ")
+                if len(kontroller_data) == 5:
+                    self.x = float(kontroller_data[0])
+                    self.y = float(kontroller_data[1])
 
-                lengde = (self.x**2 + self.y**2)**0.5
-                if lengde < self.deadzone:
-                    self.x = 0.0
-                    self.y = 0.0
-                elif lengde > 1:
-                    self.x = self.x / lengde
-                    self.y = self.y / lengde
+                    lengde = (self.x**2 + self.y**2)**0.5
+                    if lengde < self.deadzone:
+                        self.x = 0.0
+                        self.y = 0.0
+                    elif lengde > 1:
+                        self.x = self.x / lengde
+                        self.y = self.y / lengde
 
-                self.knappJ = int(kontroller_data[2])
-                self.knappA = int(kontroller_data[3])
-                self.knappB = int(kontroller_data[4])
-            else:
-                # Hvis vi leser dataene fra kontrolleren samtidig som den er i
-                #  ferd med å sende nye data, vil vi ikke lese dataene riktig
-                #  og vil få feil antall datapunkter. Dette bør fikses i
-                #  fremtiden, men foreløpig teller vi antall ganger dette
-                #  skjer, som heldigvis ikke er så ofte
-                global feil_teller
-                feil_teller += 1
+                    self.knappJ = int(kontroller_data[2])
+                    self.knappA = int(kontroller_data[3])
+                    self.knappB = int(kontroller_data[4])
+                else:
+                    # Hvis vi leser dataene fra kontrolleren samtidig som den er i
+                    #  ferd med å sende nye data, vil vi ikke lese dataene riktig
+                    #  og vil få feil antall datapunkter. Dette bør fikses i
+                    #  fremtiden, men foreløpig teller vi antall ganger dette
+                    #  skjer, som heldigvis ikke er så ofte
+                    global feil_teller
+                    feil_teller += 1
 
         return self.x, self.y, self.knappJ, self.knappA, self.knappB
 
     def koble_fra(self):
+        self.er_tilkoblet = False
         self._tilkobling.close()
         kontrollere_porter.remove(self.port)
         kontrollere.remove(self)
-        del self
 
     def test_data_send(self):
         """Send test-data. Brukes i kombinasjon med port='loop://' for
