@@ -6,6 +6,14 @@ import serial.tools.list_ports
 from math import sin, cos
 from time import perf_counter, sleep
 
+# Følgende er kodene til 1, 2 og 3 på tastaturet og piltastene
+PYGAME_K_1 = 49
+PYGAME_K_2 = 50
+PYGAME_K_3 = 51
+PYGAME_K_RIGHT = 1073741903
+PYGAME_K_LEFT = 1073741904
+PYGAME_K_DOWN = 1073741905
+PYGAME_K_UP = 1073741906
 
 # Liste for å lagre alle tilkoblede kontrollere
 kontrollere = []
@@ -37,12 +45,18 @@ class Kontroller:
         self.knappA = 0
         self.knappB = 0
 
+        self.deadzone = 0.025
+
         self.pause = False
 
         kontrollere.append(self)
 
-    def hent(self):
-
+    def hent(self, keys=None):
+        """
+        Henter data fra kontrolleren og retunerer dem.
+        Argumentet keys gjør ingenting: Dette er kun for kompatibilitet med
+         kode som bruker PygameKontroller, der man må gi en verdi for keys
+        """
         tekst = ""
 
         while True:
@@ -60,7 +74,10 @@ class Kontroller:
                 self.y = float(kontroller_data[1])
 
                 lengde = (self.x**2 + self.y**2)**0.5
-                if lengde > 1:
+                if lengde < self.deadzone:
+                    self.x = 0.0
+                    self.y = 0.0
+                elif lengde > 1:
                     self.x = self.x / lengde
                     self.y = self.y / lengde
 
@@ -114,6 +131,43 @@ class TestKontroller(Kontroller):
         if self.test_data:
             self.test_data_send()
         return super().hent()
+
+
+class PygameKontroller:
+    """
+    En 'falsk' kontroller som kan brukes til testing siden den emulerer en
+     kontroller ved hjelp av piltastene på tastaturet. Se pygame-eksempel.py
+    """
+
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.knappJ = 0
+        self.knappA = 0
+        self.knappB = 0
+
+    def hent(self, keys):
+        self.x = 0
+        self.y = 0
+        if keys[PYGAME_K_RIGHT]:
+            self.x += 1
+        if keys[PYGAME_K_LEFT]:
+            self.x -= 1
+        if keys[PYGAME_K_DOWN]:
+            self.y += 1
+        if keys[PYGAME_K_UP]:
+            self.y -= 1
+
+        lengde = (self.x**2 + self.y**2)**0.5
+        if lengde > 1:
+            self.x = self.x / lengde
+            self.y = self.y / lengde
+
+        self.knappJ = keys[PYGAME_K_1]
+        self.knappA = keys[PYGAME_K_2]
+        self.knappB = keys[PYGAME_K_3]
+
+        return self.x, self.y, self.knappJ, self.knappA, self.knappB
 
 
 def hent_nye_kontrollere(maks_antall: int = -1) -> list[Kontroller]:
