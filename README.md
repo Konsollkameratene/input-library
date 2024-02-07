@@ -56,8 +56,12 @@ spiller.y += y * 100
 
 ## Kom i gang 03: Testing uten kontroller
 
-Det kan være nyttig å teste koden uten å være koblet til en fysisk kontroller. Derfor finnes også TestKontroller-klassen:
+Det kan være nyttig å teste koden uten å være koblet til en fysisk kontroller. Derfor finnes også PygameKontroller-klassen som lar deg bruke piltastene til å emulere en kontroller.
 ```python
-min_kontroller = kontroller_input.TestKontroller()
+min_kontroller = kontroller_input.PygameKontroller()
 ```
-Når du kjører `hent()` på denne vil den returnere falske test-data. Kjør filen`enhetssirkel.py` for å se hvordan dataene ser ut.
+Merk at du må gi hvilke knapper som er trykket som et argument til `hent()`:
+```python
+keys = pygame.key.get_pressed() # Henter trykkede knapper
+x, y, knappJ, knappA, knappB = min_kontroller.hent(keys)
+```
