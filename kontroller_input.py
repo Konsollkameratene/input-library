@@ -45,7 +45,7 @@ class Kontroller:
         self.knappA = 0
         self.knappB = 0
 
-        self.deadzone = 0.025
+        self.deadzone = 0.03
 
         self.pause = False
 
