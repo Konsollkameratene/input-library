@@ -45,7 +45,7 @@ class Kontroller:
         self.knappA = 0
         self.knappB = 0
 
-        self.deadzone = 0.03
+        self.deadzone = 0.05
 
         self.er_tilkoblet = True
 
@@ -205,7 +205,7 @@ def hent_nye_kontrollere(maks_antall: int = -1) -> list[Kontroller]:
 
 
 if __name__ == "__main__":
-    TEST_MODUS = True
+    TEST_MODUS = False
 
     if TEST_MODUS:
         print("TEST_MODUS!")
