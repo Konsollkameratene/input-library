@@ -10,11 +10,11 @@
 
 `enhetssirkel.py` er et program for å teste biblioteket
 
-## Kom i gang 01: Installer
+## Kom i gang 01: Installer biblioteket!
 
-Start med å installere biblioteket pyserial som brukes til å snakke med kontrollerne. Åpne CMD og kjør følgende kommando:
+Kjør følgende kommando (sørg for at du er i riktig directory):
 
-    pip install pyserial
+    pip install .
 
 Hvis kommandoen ikke funker er det sannsynligvis fordi du ikke har python installert på riktig måte. Gå i så fall inn på [python.org/downloads/](https://www.python.org/downloads/), last ned nyeste versjon og sørg for å velge:
 
