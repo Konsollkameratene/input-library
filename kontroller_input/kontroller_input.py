@@ -135,7 +135,7 @@ class TestKontroller(Kontroller):
         self.test_data = test_data
         super().__init__(port="loop://")
 
-    def hent(self):
+    def hent(self, keys):
         if self.test_data:
             self.test_data_send()
         return super().hent()
