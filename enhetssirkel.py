@@ -4,24 +4,24 @@ import random
 
 pygame.init()
 
-# Bruk TEST_MODUS = True hvis du vil teste programmet uten kontroller
-# Hvis TEST_ROBHUSTHET = True varierer antall input-er som sendes hver
-# frame for å teste hvordan kontroller_input håndterer å ha
-# flere ventende input-data
-TEST_MODUS = True
-TEST_ROBUSTHET = False
-
-if TEST_MODUS:
+nye_kontrollere = kontroller_input.hent_nye_kontrollere()
+if len(nye_kontrollere) < 1:
+    TEST_MODUS = True
     # Lager en TestKontroller som ikke automatisk sender test-data, slik at
     #  vi kan variere hvor mange ganger vi sender test-data (trenges
     #  til TEST_ROBUSTHET)
+    print("TEST_MODUS!")
     kontroller = kontroller_input.TestKontroller(test_data=False)
 else:
-    nye_kontrollere = kontroller_input.hent_nye_kontrollere()
-    if len(nye_kontrollere) < 1:
-        print("Koble til en kontroller før du kjører programmet!")
-        exit()
+    TEST_MODUS = False
     kontroller = nye_kontrollere[0]
+
+# TEST_MODUS blir satt til True hvis det ikke er tilkoblet noen kontroller
+# Hvis også TEST_ROBHUSTHET = True varierer antall input-er som sendes hver
+# frame for å teste hvordan kontroller_input håndterer å ha
+# flere ventende input-data
+TEST_ROBUSTHET = False
+
 
 BREDDE = 480
 HALV_BREDDE = BREDDE // 2
