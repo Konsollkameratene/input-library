@@ -12,7 +12,7 @@
 
 ## Kom i gang 01: Installer biblioteket!
 
-Kjør følgende kommando (sørg for at du er i riktig directory):
+Last ned repository-et og kjør følgende kommando inne i mappen:
 
     pip install .
 
