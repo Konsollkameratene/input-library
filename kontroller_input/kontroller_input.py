@@ -6,7 +6,7 @@ import serial.tools.list_ports
 from math import sin, cos
 from time import perf_counter, sleep
 
-# Følgende er kodene til 1, 2 og 3 på tastaturet og piltastene
+# Følgende er kodene til knapper på tastaturet
 PYGAME_K_1 = 49
 PYGAME_K_2 = 50
 PYGAME_K_3 = 51
@@ -14,6 +14,11 @@ PYGAME_K_RIGHT = 1073741903
 PYGAME_K_LEFT = 1073741904
 PYGAME_K_DOWN = 1073741905
 PYGAME_K_UP = 1073741906
+PYGAME_K_W = 119
+PYGAME_K_A = 97
+PYGAME_K_S = 115
+PYGAME_K_D = 100
+
 
 # Liste for å lagre alle tilkoblede kontrollere
 kontrollere = []
@@ -135,7 +140,7 @@ class TestKontroller(Kontroller):
         self.test_data = test_data
         super().__init__(port="loop://")
 
-    def hent(self):
+    def hent(self, keys):
         if self.test_data:
             self.test_data_send()
         return super().hent()
@@ -147,24 +152,36 @@ class PygameKontroller:
      kontroller ved hjelp av piltastene på tastaturet. Se pygame-eksempel.py
     """
 
-    def __init__(self):
+    def __init__(self, wasd_kontroller: bool = False):
         self.x = 0
         self.y = 0
         self.knappJ = 0
         self.knappA = 0
         self.knappB = 0
+        self.wasd_kontroller = wasd_kontroller
 
     def hent(self, keys):
         self.x = 0
         self.y = 0
-        if keys[PYGAME_K_RIGHT]:
-            self.x += 1
-        if keys[PYGAME_K_LEFT]:
-            self.x -= 1
-        if keys[PYGAME_K_DOWN]:
-            self.y += 1
-        if keys[PYGAME_K_UP]:
-            self.y -= 1
+
+        if self.wasd_kontroller:
+            if keys[PYGAME_K_D]:
+                self.x += 1
+            if keys[PYGAME_K_A]:
+                self.x -= 1
+            if keys[PYGAME_K_S]:
+                self.y += 1
+            if keys[PYGAME_K_W]:
+                self.y -= 1
+        else:
+            if keys[PYGAME_K_RIGHT]:
+                self.x += 1
+            if keys[PYGAME_K_LEFT]:
+                self.x -= 1
+            if keys[PYGAME_K_DOWN]:
+                self.y += 1
+            if keys[PYGAME_K_UP]:
+                self.y -= 1
 
         lengde = (self.x**2 + self.y**2)**0.5
         if lengde > 1:
