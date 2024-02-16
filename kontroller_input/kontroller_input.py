@@ -54,6 +54,7 @@ class Kontroller:
 
         self.er_tilkoblet = True
 
+        self.normaliser = True
         self.pause = False
 
         kontrollere.append(self)
@@ -90,7 +91,7 @@ class Kontroller:
                     if lengde < self.deadzone:
                         self.x = 0.0
                         self.y = 0.0
-                    elif lengde > 1:
+                    elif self.normaliser and lengde > 1:
                         self.x = self.x / lengde
                         self.y = self.y / lengde
 
@@ -140,7 +141,7 @@ class TestKontroller(Kontroller):
         self.test_data = test_data
         super().__init__(port="loop://")
 
-    def hent(self, keys):
+    def hent(self, keys=None):
         if self.test_data:
             self.test_data_send()
         return super().hent()
@@ -159,6 +160,7 @@ class PygameKontroller:
         self.knappA = 0
         self.knappB = 0
         self.wasd_kontroller = wasd_kontroller
+        self.normaliser = True
 
     def hent(self, keys):
         self.x = 0
@@ -184,7 +186,7 @@ class PygameKontroller:
                 self.y -= 1
 
         lengde = (self.x**2 + self.y**2)**0.5
-        if lengde > 1:
+        if self.normaliser and lengde > 1:
             self.x = self.x / lengde
             self.y = self.y / lengde
 
