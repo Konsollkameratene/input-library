@@ -209,12 +209,12 @@ def hent_nye_kontrollere(maks_antall: int = -1) -> list[Kontroller]:
     for enhet in enheter:
         if len(kontrollere) == maks_antall:
             break
-        if enhet.name in kontrollere_porter:
+        if enhet.device in kontrollere_porter:
             # Hopper over enheten hvis vi allerede er koblet til den
             continue
         if enhet.vid == 11914:
             # __init__-funksjonen lagrer automatisk til kontrollere-listen
-            kontroller = Kontroller(port=enhet.name)
+            kontroller = Kontroller(port=enhet.device)
 
             nye_kontrollere.append(kontroller)
             print("Pico?:", end=" ")
